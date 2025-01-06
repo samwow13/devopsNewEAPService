@@ -35,6 +35,32 @@
     display: none;
 }
 
+/* Process Status Table Styles */
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.status-running {
+    background-color: #28a745;
+}
+
+.status-stopped {
+    background-color: #dc3545;
+}
+
+.process-action-btn {
+    min-width: 80px;
+}
+
+/* Add spacing between multiple buttons */
+.btn + .btn {
+    margin-left: 0.5rem;
+}
+
 /* Ensure main content doesn't get hidden under fixed navbar */
 main {
     margin-top: 60px;

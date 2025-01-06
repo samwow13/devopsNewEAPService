@@ -184,3 +184,13 @@
 - Fixed PowerShell command execution endpoint URL in main.js
 - Updated error handling to show more descriptive messages
 - Ensured proper endpoint consistency between frontend and backend
+
+[2025-01-06 10:45]
+- Added EnvironmentManager class for managing environment connections
+- Added environment selection dropdown above Process Status Table
+- Environment connection commands are stored securely and not exposed to frontend
+
+[2025-01-06 10:47]
+- Updated environment options to Local, Prod 1, and Prod 2
+- Set Local as the default environment
+- Updated backend connection commands for each environment

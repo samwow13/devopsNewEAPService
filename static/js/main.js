@@ -183,21 +183,90 @@ function updateProcessTable(output) {
         const match = line.match(/^(.+?)\s+is\s+(.+)$/);
         if (match) {
             const [, processName, status] = match;
+            const isRunning = status.trim() === 'running';
             const row = document.createElement('tr');
             
             // Process name cell
             const processCell = document.createElement('td');
             processCell.textContent = processName.trim();
             
-            // Status cell with appropriate styling
+            // Status cell with dot indicator
             const statusCell = document.createElement('td');
-            const isRunning = status.trim() === 'running';
-            statusCell.textContent = status.trim();
-            statusCell.classList.add(isRunning ? 'text-success' : 'text-danger');
+            statusCell.classList.add('text-center');
             
+            const statusDot = document.createElement('span');
+            statusDot.classList.add('status-indicator');
+            statusDot.classList.add(isRunning ? 'status-running' : 'status-stopped');
+            
+            const statusText = document.createElement('span');
+            statusText.classList.add(isRunning ? 'text-success' : 'text-danger');
+            statusText.textContent = status.trim();
+            
+            statusCell.appendChild(statusDot);
+            statusCell.appendChild(statusText);
+            
+            // Actions cell
+            const actionsCell = document.createElement('td');
+            actionsCell.classList.add('text-center');
+            
+            const actionButton = document.createElement('button');
+            actionButton.type = 'button';
+            actionButton.classList.add('btn', 'process-action-btn');
+            
+            if (isRunning) {
+                actionButton.classList.add('btn-danger');
+                actionButton.textContent = 'Stop';
+                actionButton.onclick = () => handleProcessAction(processName, 'stop');
+            } else {
+                actionButton.classList.add('btn-success');
+                actionButton.textContent = 'Start';
+                actionButton.onclick = () => handleProcessAction(processName, 'start');
+            }
+            
+            actionsCell.appendChild(actionButton);
+            
+            // Add cells to row
             row.appendChild(processCell);
             row.appendChild(statusCell);
+            row.appendChild(actionsCell);
             tableBody.appendChild(row);
         }
     });
+}
+
+// Function to handle process start/stop actions
+async function handleProcessAction(processName, action) {
+    const command = action === 'start' 
+        ? `Start-Process ${processName}`
+        : `Stop-Process -Name ${processName} -Force`;
+        
+    try {
+        const response = await fetch('/ps/execute-command', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ command })
+        });
+
+        const result = await response.json();
+        
+        // Refresh the process status after action
+        const refreshCommand = `$processes = @('notepad', 'SnippingTool', 'calc', 'mspaint')\nforeach ($proc in $processes) {\n    if (Get-Process -Name $proc -ErrorAction SilentlyContinue) {\n        Write-Output "$proc is running"\n    } else {\n        Write-Output "$proc is not running"\n    }\n}`;
+        
+        const refreshResponse = await fetch('/ps/execute-command', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ command: refreshCommand })
+        });
+
+        const refreshResult = await refreshResponse.json();
+        updateProcessTable(refreshResult.output);
+        
+    } catch (error) {
+        console.error(`Error ${action}ing process:`, error);
+        alert(`Failed to ${action} process. Please try again.`);
+    }
 }
