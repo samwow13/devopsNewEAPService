@@ -75,6 +75,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// PowerShell Mode Management
+function updatePSMode(mode) {
+    const psModeElement = document.getElementById('psMode');
+    if (psModeElement) {
+        psModeElement.textContent = `PS Mode: ${mode}`;
+        psModeElement.className = `badge ${mode === 'Remote' ? 'bg-primary' : 'bg-secondary'} me-3`;
+    }
+}
+
 // PowerShell Command Execution
 document.addEventListener('DOMContentLoaded', function() {
     const executeCommandBtn = document.getElementById('executeCommand');
@@ -103,16 +112,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function executeCommand() {
-        const command = commandInput.value.trim();
-        
-        if (!command) {
-            alert('Please enter a PowerShell command');
+        if (!commandInput.value.trim()) {
+            alert('Please enter a command');
             return;
         }
 
-        // Disable button and show loading state
         executeCommandBtn.disabled = true;
-        executeCommandBtn.innerHTML = 'Executing...';
+        executeCommandBtn.textContent = 'Executing...';
 
         try {
             const response = await fetch('/ps/execute-command', {
@@ -120,25 +126,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ command: command })
+                body: JSON.stringify({ command: commandInput.value })
             });
 
             const result = await response.json();
             
-            // Show the output container
-            outputContainer.style.display = 'block';
+            // Update PS mode indicator
+            updatePSMode(result.mode);
             
-            // Update output
+            outputContainer.style.display = 'block';
             outputElement.textContent = result.output;
-
+            outputContainer.className = `mt-3 border p-3 ${result.status === 'success' ? 'border-success' : 'border-danger'}`;
         } catch (error) {
             console.error('Error executing command:', error);
             outputContainer.style.display = 'block';
-            outputElement.textContent = `Error executing command: ${error.toString()}`;
+            outputElement.textContent = 'Error executing command: ' + error.toString();
+            outputContainer.className = 'mt-3 border border-danger p-3';
         } finally {
-            // Re-enable button and restore text
             executeCommandBtn.disabled = false;
-            executeCommandBtn.innerHTML = 'Execute';
+            executeCommandBtn.textContent = 'Execute';
         }
     }
 });

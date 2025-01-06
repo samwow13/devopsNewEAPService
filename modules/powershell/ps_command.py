@@ -3,12 +3,14 @@ PowerShell Command Executor Module
 Handles direct execution of PowerShell commands and returns their output
 """
 import subprocess
+from .ps_state import PSStateManager
 
 class PSCommandExecutor:
     def __init__(self):
         """Initialize the PowerShell Command Executor"""
         self.last_command = None
         self.last_output = None
+        self.state_manager = PSStateManager()
         
     def execute_command(self, command):
         """
@@ -24,10 +26,15 @@ class PSCommandExecutor:
             # Store the command
             self.last_command = command
             
-            # Create a temporary script with the command
-            script_content = command
+            if self.state_manager.is_remote_mode:
+                # Execute command through remote session
+                session = self.state_manager.get_session()
+                script_content = f"Invoke-Command -Session ${session} -ScriptBlock {{ {command} }}"
+            else:
+                # Execute locally
+                script_content = command
             
-            # Execute PowerShell command with proper script block handling
+            # Execute PowerShell command
             process = subprocess.Popen(
                 ['powershell.exe', '-NoProfile', '-NonInteractive', '-Command', script_content],
                 stdout=subprocess.PIPE,
@@ -48,12 +55,14 @@ class PSCommandExecutor:
             return {
                 'command': command,
                 'output': output,
-                'status': 'success' if process.returncode == 0 else 'error'
+                'status': 'success' if process.returncode == 0 else 'error',
+                'mode': self.state_manager.get_execution_mode()
             }
             
         except Exception as e:
             return {
                 'command': command,
                 'output': f"Error executing command: {str(e)}",
-                'status': 'error'
+                'status': 'error',
+                'mode': self.state_manager.get_execution_mode()
             }

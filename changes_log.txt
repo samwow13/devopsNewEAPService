@@ -172,3 +172,15 @@
 - Added monospace font and proper whitespace handling for command input
 - Repositioned Execute button below textarea for better UX
 - Added -NoProfile and -NonInteractive flags to PowerShell execution for better script handling
+
+[2025-01-06 09:41]
+- Added PSStateManager class to manage PowerShell execution mode (local vs remote)
+- Updated PSCommandExecutor to support both local and remote command execution
+- Added visual indicator in navbar showing current PowerShell mode (Local/Remote)
+- Improved command execution to automatically use remote session when available
+- Added mode information to command execution response
+
+[2025-01-06 09:44]
+- Fixed PowerShell command execution endpoint URL in main.js
+- Updated error handling to show more descriptive messages
+- Ensured proper endpoint consistency between frontend and backend
