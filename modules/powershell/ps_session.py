@@ -2,13 +2,19 @@
 PowerShell Remote Session Module
 Handles the creation and management of PowerShell remote sessions
 """
-from flask import session
+from flask import session, current_app
 import subprocess
 
 class PSRemoteSession:
+    _instance = None
+    
     def __init__(self):
         """Initialize the PowerShell Remote Session manager"""
         self.active_sessions = {}
+        
+    def get_credential_manager(self):
+        """Get the credential manager from current app context"""
+        return current_app.credential_manager
         
     def create_session(self, computer_name):
         """
@@ -41,23 +47,24 @@ class PSRemoteSession:
         try:
             # Get credentials from Flask session
             username = session.get('username')
-            password = session.get('password')  # This should be properly encrypted in production
+            encrypted_password = session.get('encrypted_password')
+            
+            if not username or not encrypted_password:
+                return {
+                    'status': 'error',
+                    'message': 'No credentials found in session',
+                    'command': None,
+                    'raw_output': 'Authentication required'
+                }
 
+            # Create PowerShell credential script
+            credential_manager = self.get_credential_manager()
+            cred_script = credential_manager.get_ps_credential_script(username, encrypted_password)
+            
             # Create PowerShell command
             ps_command = f"""
-            $cred = New-Object System.Management.Automation.PSCredential (
-                "{username}", 
-                (ConvertTo-SecureString "{password}" -AsPlainText -Force)
-            )
-            $result = Test-WSMan -ComputerName {computer_name} -Credential $cred -ErrorAction SilentlyContinue
-            if ($?) {{ 
-                Write-Output "Connection Status: Success"
-                Write-Output "Details:"
-                $result | Format-List
-            }} else {{ 
-                Write-Output "Connection Status: Failed"
-                Write-Output "Error: Unable to establish connection"
-            }}
+            {cred_script}
+            Test-WSMan -ComputerName {computer_name} -Credential $cred -ErrorAction SilentlyContinue
             """
 
             # Execute PowerShell command

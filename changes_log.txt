@@ -119,3 +119,42 @@
 - Created ps_routes.py to handle PowerShell-related HTTP endpoints
 - Added /ps/test-connection route for handling connection tests
 - Registered PowerShell blueprint in app.py
+
+[2025-01-06 08:58]
+- Added CredentialManager class for secure password handling
+- Updated PSRemoteSession to use CredentialManager for PowerShell credentials
+- Improved error handling for missing credentials
+- Added secure password encryption/decryption functionality
+
+[2025-01-06 09:00]
+- Fixed application context issue in CredentialManager
+- Added proper initialization of CredentialManager in app.py
+- Updated PSRemoteSession to use initialized CredentialManager from current_app
+- Added better error handling for uninitialized CredentialManager
+
+[2025-01-06 09:01]
+- Fixed application context issues in PowerShell modules
+- Updated PSRemoteSession to get credential_manager only when needed
+- Implemented request context handling in ps_routes.py using Flask's g object
+- Removed module-level initialization of PSRemoteSession
+
+[2025-01-06 09:03]
+- Enhanced PowerShell command output formatting
+- Added display of full PowerShell command being executed
+- Improved error messages with command context
+- Added clear section headers for command and output
+
+[2025-01-06 09:05]
+- Updated auth_routes.py to encrypt and store password in session
+- Added credential encryption during login
+- Fixed session storage of encrypted credentials
+
+[2025-01-06 09:05]
+- Fixed CredentialManager initialization in app.py
+- Properly attached credential_manager to Flask app instance
+- Updated initialization sequence for better app context handling
+
+[2025-01-06 09:06]
+- Simplified PowerShell command output to show only raw results
+- Removed custom formatting and headers from PowerShell output
+- Streamlined error handling to show direct error messages

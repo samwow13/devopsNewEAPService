@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session
+from flask import Blueprint, render_template, request, redirect, url_for, session, current_app
 
 # Create authentication blueprint
 auth_bp = Blueprint('auth', __name__)
@@ -20,8 +20,12 @@ def handle_login():
     username = request.form.get('username')
     password = request.form.get('password')
     
-    # Store username in session
+    # Encrypt and store credentials in session
+    credential_manager = current_app.credential_manager
+    encrypted_password = credential_manager.encrypt_password(password)
+    
     session['username'] = username
+    session['encrypted_password'] = encrypted_password
     
     # Redirect to landing page (no validation required)
     return redirect(url_for('auth.landing'))
