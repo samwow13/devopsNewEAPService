@@ -9,9 +9,11 @@ app.secret_key = os.urandom(24)  # Generate a random secret key for session mana
 
 # Import routes after Flask app initialization to avoid circular imports
 from modules.auth.auth_routes import auth_bp
+from modules.powershell.ps_routes import ps_bp
 
 # Register blueprints
 app.register_blueprint(auth_bp)
+app.register_blueprint(ps_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)
