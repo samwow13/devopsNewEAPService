@@ -29,17 +29,21 @@ class EnvironmentManager:
     def select_environment(self, environment_name):
         """
         Select an environment and perform necessary initialization.
-        Returns process statuses if Local environment is selected.
+        Returns process statuses for the selected environment.
         """
         self.current_environment = environment_name
-        if environment_name == 'Local':
-            return self.process_manager.check_local_processes()
-        return None
+        # Check processes for any environment
+        return self.process_manager.check_processes(environment_name, self.get_connection_command(environment_name))
     
     def get_current_environment(self):
         """Returns the currently selected environment."""
         return self.current_environment
     
     def get_process_statuses(self):
-        """Returns the current process statuses."""
-        return self.process_manager.get_process_statuses()
+        """Returns the current process statuses for the current environment."""
+        if not self.current_environment:
+            return None
+        return self.process_manager.check_processes(
+            self.current_environment, 
+            self.get_connection_command(self.current_environment)
+        )

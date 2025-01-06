@@ -207,3 +207,15 @@
 - Added /environment/select endpoint to handle environment selection
 - Updated app.py to register environment blueprint
 - Added automatic process status update when "Local" environment is selected
+
+[2025-01-06 11:32]
+- Added automatic process status refresh every 10 seconds in main.js
+- Added interval management to clear refresh when switching environments
+- Improved error handling for refresh failures to avoid user disruption
+
+[2025-01-06 11:36]
+- Updated ProcessManager to handle process checking in any environment (local or remote)
+- Modified EnvironmentManager to support process status checks across all environments
+- Added new /environment/status endpoint for periodic status updates
+- Updated frontend to refresh process table every 10 seconds for all environments
+- Improved error handling for remote process checking

@@ -172,6 +172,12 @@ document.addEventListener('DOMContentLoaded', function() {
         environmentSelect.addEventListener('change', async function() {
             const selectedEnvironment = this.value;
             
+            // Clear existing interval if any
+            if (processStatusInterval) {
+                clearInterval(processStatusInterval);
+                processStatusInterval = null;
+            }
+            
             try {
                 const response = await fetch('/environment/select', {
                     method: 'POST',
@@ -183,8 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const result = await response.json();
                 
-                // If it's the local environment, update the process table
-                if (selectedEnvironment === 'Local' && result.process_statuses) {
+                if (result.process_statuses) {
                     // Convert process statuses to the format expected by updateProcessTable
                     const processOutput = Object.entries(result.process_statuses)
                         .map(([process, status]) => `${process} is ${status.toLowerCase()}`)
@@ -192,6 +197,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     updateProcessTable(processOutput);
                 }
+                
+                // Start auto-refresh interval (for any environment)
+                processStatusInterval = setInterval(refreshProcessStatus, 10000);
                 
                 // Update PS Mode
                 updatePSMode(selectedEnvironment === 'Local' ? 'Local' : 'Remote');
@@ -206,6 +214,35 @@ document.addEventListener('DOMContentLoaded', function() {
         environmentSelect.dispatchEvent(new Event('change'));
     }
 });
+
+// Process Status Auto-Refresh
+let processStatusInterval = null;
+
+async function refreshProcessStatus() {
+    const environmentSelect = document.getElementById('environmentSelect');
+    if (!environmentSelect) return;
+    
+    try {
+        // Get current process statuses from the server
+        const response = await fetch('/environment/status', {
+            method: 'GET'
+        });
+
+        const result = await response.json();
+        if (result.process_statuses) {
+            // Convert process statuses to the format expected by updateProcessTable
+            const processOutput = Object.entries(result.process_statuses)
+                .map(([process, status]) => `${process} is ${status.toLowerCase()}`)
+                .join('\n');
+            
+            updateProcessTable(processOutput);
+        }
+    } catch (error) {
+        console.error('Error refreshing process status:', error);
+        // Don't show alert to avoid annoying the user
+        // Just log to console and let it try again in 10 seconds
+    }
+}
 
 // Function to dynamically update the process status table
 function updateProcessTable(output) {
