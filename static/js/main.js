@@ -91,25 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const commandInput = document.getElementById('psCommandInput');
     const outputContainer = document.getElementById('psCommandOutput');
     const outputElement = document.getElementById('commandOutput');
-
-    if (executeCommandBtn && commandInput) {
-        // Execute command when button is clicked
-        executeCommandBtn.addEventListener('click', executeCommand);
-        
-        // Execute command when Enter is pressed in input
-        commandInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                executeCommand();
-            }
-        });
-    }
-
-    if (clearOutputBtn) {
-        clearOutputBtn.addEventListener('click', function() {
-            outputElement.textContent = '';
-            outputContainer.style.display = 'none';
-        });
-    }
+    const autoFillButton = document.getElementById('autoFillButton');
 
     async function executeCommand() {
         if (!commandInput.value.trim()) {
@@ -137,6 +119,11 @@ document.addEventListener('DOMContentLoaded', function() {
             outputContainer.style.display = 'block';
             outputElement.textContent = result.output;
             outputContainer.className = `mt-3 border p-3 ${result.status === 'success' ? 'border-success' : 'border-danger'}`;
+
+            // Update process table if process data is available
+            if (result.processData) {
+                updateProcessTable(result.processData);
+            }
         } catch (error) {
             console.error('Error executing command:', error);
             outputContainer.style.display = 'block';
@@ -147,4 +134,70 @@ document.addEventListener('DOMContentLoaded', function() {
             executeCommandBtn.textContent = 'Execute';
         }
     }
+
+    if (executeCommandBtn && commandInput) {
+        // Execute command when button is clicked
+        executeCommandBtn.addEventListener('click', async function() {
+            await executeCommand();
+            updateProcessTable(outputElement.textContent);
+        });
+
+        // Execute command when Enter is pressed in input
+        commandInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                executeCommand();
+            }
+        });
+    }
+
+    if (clearOutputBtn) {
+        clearOutputBtn.addEventListener('click', function() {
+            outputElement.textContent = '';
+            outputContainer.style.display = 'none';
+        });
+    }
+
+    if (autoFillButton && commandInput) {
+        autoFillButton.addEventListener('click', function() {
+            const psScript = `$processes = @('notepad', 'SnippingTool', 'calc', 'mspaint')\nforeach ($proc in $processes) {\n    if (Get-Process -Name $proc -ErrorAction SilentlyContinue) {\n        Write-Output "$proc is running"\n    } else {\n        Write-Output "$proc is not running"\n    }\n}`;
+            commandInput.value = psScript;
+        });
+    }
 });
+
+// Function to dynamically update the process status table
+function updateProcessTable(output) {
+    const tableBody = document.getElementById('processStatusTableBody');
+    if (!tableBody || !output) return;
+
+    // Clear existing table rows
+    tableBody.innerHTML = '';
+
+    // Split the output into lines and process each line
+    const lines = output.trim().split('\n');
+    lines.forEach(line => {
+        line = line.trim();
+        if (!line) return;  // Skip empty lines
+        
+        // Try to match the pattern "processName is status"
+        const match = line.match(/^(.+?)\s+is\s+(.+)$/);
+        if (match) {
+            const [, processName, status] = match;
+            const row = document.createElement('tr');
+            
+            // Process name cell
+            const processCell = document.createElement('td');
+            processCell.textContent = processName.trim();
+            
+            // Status cell with appropriate styling
+            const statusCell = document.createElement('td');
+            const isRunning = status.trim() === 'running';
+            statusCell.textContent = status.trim();
+            statusCell.classList.add(isRunning ? 'text-success' : 'text-danger');
+            
+            row.appendChild(processCell);
+            row.appendChild(statusCell);
+            tableBody.appendChild(row);
+        }
+    });
+}
