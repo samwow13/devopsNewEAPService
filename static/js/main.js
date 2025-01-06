@@ -74,3 +74,71 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// PowerShell Command Execution
+document.addEventListener('DOMContentLoaded', function() {
+    const executeCommandBtn = document.getElementById('executeCommand');
+    const clearOutputBtn = document.getElementById('clearOutput');
+    const commandInput = document.getElementById('psCommandInput');
+    const outputContainer = document.getElementById('psCommandOutput');
+    const outputElement = document.getElementById('commandOutput');
+
+    if (executeCommandBtn && commandInput) {
+        // Execute command when button is clicked
+        executeCommandBtn.addEventListener('click', executeCommand);
+        
+        // Execute command when Enter is pressed in input
+        commandInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                executeCommand();
+            }
+        });
+    }
+
+    if (clearOutputBtn) {
+        clearOutputBtn.addEventListener('click', function() {
+            outputElement.textContent = '';
+            outputContainer.style.display = 'none';
+        });
+    }
+
+    async function executeCommand() {
+        const command = commandInput.value.trim();
+        
+        if (!command) {
+            alert('Please enter a PowerShell command');
+            return;
+        }
+
+        // Disable button and show loading state
+        executeCommandBtn.disabled = true;
+        executeCommandBtn.innerHTML = 'Executing...';
+
+        try {
+            const response = await fetch('/ps/execute-command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ command: command })
+            });
+
+            const result = await response.json();
+            
+            // Show the output container
+            outputContainer.style.display = 'block';
+            
+            // Update output
+            outputElement.textContent = result.output;
+
+        } catch (error) {
+            console.error('Error executing command:', error);
+            outputContainer.style.display = 'block';
+            outputElement.textContent = `Error executing command: ${error.toString()}`;
+        } finally {
+            // Re-enable button and restore text
+            executeCommandBtn.disabled = false;
+            executeCommandBtn.innerHTML = 'Execute';
+        }
+    }
+});

@@ -24,9 +24,12 @@ class PSCommandExecutor:
             # Store the command
             self.last_command = command
             
-            # Execute PowerShell command
+            # Create a temporary script with the command
+            script_content = command
+            
+            # Execute PowerShell command with proper script block handling
             process = subprocess.Popen(
-                ['powershell.exe', '-Command', command],
+                ['powershell.exe', '-NoProfile', '-NonInteractive', '-Command', script_content],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True
@@ -51,6 +54,6 @@ class PSCommandExecutor:
         except Exception as e:
             return {
                 'command': command,
-                'output': str(e),
+                'output': f"Error executing command: {str(e)}",
                 'status': 'error'
             }

@@ -158,3 +158,17 @@
 - Simplified PowerShell command output to show only raw results
 - Removed custom formatting and headers from PowerShell output
 - Streamlined error handling to show direct error messages
+
+[2025-01-06 09:33]
+- Added PowerShell command input box and output display in landing.html
+- Added command execution functionality in main.js
+- Added execute-command endpoint in ps_routes.py
+- Updated UI to show command output in a card with clear functionality
+- Added error handling for command execution
+
+[2025-01-06 09:36]
+- Updated PowerShell command input to use multi-line textarea with 10 rows
+- Improved PowerShell command execution to better handle multi-line scripts
+- Added monospace font and proper whitespace handling for command input
+- Repositioned Execute button below textarea for better UX
+- Added -NoProfile and -NonInteractive flags to PowerShell execution for better script handling
