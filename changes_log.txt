@@ -194,3 +194,16 @@
 - Updated environment options to Local, Prod 1, and Prod 2
 - Set Local as the default environment
 - Updated backend connection commands for each environment
+
+[2025-01-06 11:27]
+- Created new ProcessManager class in process_manager.py for handling process monitoring
+- Updated EnvironmentManager to integrate with ProcessManager
+- Added automatic process status checking when "Local" environment is selected
+- Added methods for retrieving process statuses and current environment
+
+[2025-01-06 11:29]
+- Added environment selection handler in main.js to update process table when environment changes
+- Created new environment_routes.py module for handling environment-related endpoints
+- Added /environment/select endpoint to handle environment selection
+- Updated app.py to register environment blueprint
+- Added automatic process status update when "Local" environment is selected

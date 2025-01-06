@@ -165,6 +165,48 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Environment Selection Handler
+document.addEventListener('DOMContentLoaded', function() {
+    const environmentSelect = document.getElementById('environmentSelect');
+    if (environmentSelect) {
+        environmentSelect.addEventListener('change', async function() {
+            const selectedEnvironment = this.value;
+            
+            try {
+                const response = await fetch('/environment/select', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ environment: selectedEnvironment })
+                });
+
+                const result = await response.json();
+                
+                // If it's the local environment, update the process table
+                if (selectedEnvironment === 'Local' && result.process_statuses) {
+                    // Convert process statuses to the format expected by updateProcessTable
+                    const processOutput = Object.entries(result.process_statuses)
+                        .map(([process, status]) => `${process} is ${status.toLowerCase()}`)
+                        .join('\n');
+                    
+                    updateProcessTable(processOutput);
+                }
+                
+                // Update PS Mode
+                updatePSMode(selectedEnvironment === 'Local' ? 'Local' : 'Remote');
+                
+            } catch (error) {
+                console.error('Error selecting environment:', error);
+                alert('Failed to select environment. Please try again.');
+            }
+        });
+        
+        // Trigger change event on initial load to set up initial state
+        environmentSelect.dispatchEvent(new Event('change'));
+    }
+});
+
 // Function to dynamically update the process status table
 function updateProcessTable(output) {
     const tableBody = document.getElementById('processStatusTableBody');

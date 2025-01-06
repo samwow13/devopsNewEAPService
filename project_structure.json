@@ -7,7 +7,9 @@
         "templates": ["login.html", "landing.html"],
         "modules": {
             "auth": ["auth_routes.py"],
-            "powershell": ["ps_session.py"]
+            "powershell": ["ps_session.py"],
+            "environment_manager.py": "Environment management module",
+            "process_manager.py": "Process monitoring and status management"
         },
         "app.py": "Main application file",
         "requirements.txt": "Project dependencies",
