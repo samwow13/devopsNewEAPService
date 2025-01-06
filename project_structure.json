@@ -1,0 +1,16 @@
+{
+    "root": {
+        "static": {
+            "css": ["styles.css"],
+            "js": ["main.js"]
+        },
+        "templates": ["login.html", "landing.html"],
+        "modules": {
+            "auth": ["auth_routes.py"]
+        },
+        "app.py": "Main application file",
+        "requirements.txt": "Project dependencies",
+        "changes_log.txt": "Change tracking file",
+        "README.md": "Project documentation"
+    }
+}

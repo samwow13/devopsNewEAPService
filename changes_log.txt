@@ -1,0 +1,70 @@
+# Changes Log
+
+[2024-12-31 10:16]
+- Initial project setup
+- Created project structure file
+- Created basic login system structure
+
+[2024-12-31 10:20]
+- Added user session management in auth_routes.py
+- Updated landing page to display logged-in username
+- Added session configuration in app.py
+- Added CSS styling for user welcome message
+
+[2024-12-31 10:23]
+- Added logout route in auth_routes.py
+- Added logout button to landing.html with proper positioning
+- Updated CSS styles to include header and logout button styling
+- Improved user welcome message layout
+
+[2024-12-31 10:24]
+- Updated header styling to create a fixed navigation bar layout
+- Adjusted welcome message and logout button positioning
+- Added proper spacing below header for main content
+- Improved overall header appearance with shadow and z-index
+
+[2024-12-31 10:28]
+- Added expansion panels for PowerShell Remote Session and PowerShell Commands
+- Created visibility controls (checkboxes) in header
+- Added main.js for panel visibility functionality
+- Updated CSS styles for panels and controls
+- Reorganized landing page layout to accommodate new components
+
+[2024-12-31 10:38]
+- Updated expansion panels to be expandable/collapsible
+- Added expand/collapse animations and icons
+- Added hover effects for panel headers
+- Panels are now expanded by default
+- Maintained visibility toggle functionality
+
+[2024-12-31 10:40]
+- Simplified panel controls to use a single checkbox for all panels
+- Improved panel expansion/collapse functionality
+- Panels now start collapsed by default
+- Fixed dropdown functionality to properly toggle content visibility
+- Updated icon rotation animation for better visual feedback
+
+[2024-12-31 10:41]
+- Updated checkbox label to "Enable or Disable Panels"
+- Added left-aligned styling for the checkbox label
+- Improved checkbox and label spacing
+- Added proper vertical alignment for checkbox and label
+
+[2024-12-31 10:42]
+- Fixed checkbox label text visibility by changing color from white to dark gray
+- Added font weight to make the text more prominent
+- Maintained left alignment and spacing improvements
+
+[2024-12-31 10:44]
+- Changed expansion panel arrows from down (▼) to right (▶)
+- Updated CSS to rotate arrows 90 degrees when panels are expanded
+- Improved visual feedback for panel expansion state
+
+[2024-12-31 13:24]
+- Restored landing.html content that was accidentally emptied
+- Recreated all previously implemented features:
+  * User welcome message
+  * Logout button
+  * Panel visibility controls
+  * Expansion panels for PowerShell features
+  * Proper header and main content structure
