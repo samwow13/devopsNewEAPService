@@ -91,3 +91,16 @@
 - Made expansion panels full-width for better readability
 - Added proper spacing and margins for better layout
 - Improved navbar styling using Bootstrap's navbar component
+
+[2025-01-06 07:58]
+- Created PowerShell Remote Session module (ps_session.py)
+- Added PSRemoteSession class with basic session management functionality
+- Updated landing page with Bootstrap accordion-style panels
+- Added computer name input field with proper Bootstrap styling
+- Updated project structure to include new PowerShell module
+- Converted expansion panels to Bootstrap accordions for better UX
+
+[2025-01-06 08:00]
+- Fixed "Enable or Disable Panels" functionality to work with Bootstrap accordion
+- Updated main.js to handle panel visibility with new accordion structure
+- Removed legacy expansion panel code

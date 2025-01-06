@@ -28,25 +28,44 @@
     <main class="container mt-5 pt-4">
         <div class="row">
             <div class="col-12">
-                <div class="expansion-panel mb-3">
-                    <div class="panel-header">
-                        <span class="panel-arrow">▶</span>
-                        PowerShell Remote Session
+                <div class="accordion">
+                    <!-- PowerShell Remote Session Panel -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="psRemoteSessionHeader">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#psRemoteSessionContent" aria-expanded="false" 
+                                    aria-controls="psRemoteSessionContent">
+                                PowerShell Remote Session
+                            </button>
+                        </h2>
+                        <div id="psRemoteSessionContent" class="accordion-collapse collapse" 
+                             aria-labelledby="psRemoteSessionHeader">
+                            <div class="accordion-body">
+                                <div class="mb-3">
+                                    <label for="computerName" class="form-label">Computer Name:</label>
+                                    <input type="text" class="form-control" id="computerName" 
+                                           placeholder="Enter computer name or IP">
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="panel-content">
-                        <!-- PowerShell Remote Session content will go here -->
-                        <p>Remote Session Panel Content</p>
-                    </div>
-                </div>
 
-                <div class="expansion-panel mb-3">
-                    <div class="panel-header">
-                        <span class="panel-arrow">▶</span>
-                        PowerShell Commands
-                    </div>
-                    <div class="panel-content">
-                        <!-- PowerShell Commands content will go here -->
-                        <p>Commands Panel Content</p>
+                    <!-- PowerShell Commands Panel -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="psCommandsHeader">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#psCommandsContent" aria-expanded="false" 
+                                    aria-controls="psCommandsContent">
+                                PowerShell Commands
+                            </button>
+                        </h2>
+                        <div id="psCommandsContent" class="accordion-collapse collapse" 
+                             aria-labelledby="psCommandsHeader">
+                            <div class="accordion-body">
+                                <!-- PowerShell Commands content will go here -->
+                                <p>Commands Panel Content</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -6,7 +6,8 @@
         },
         "templates": ["login.html", "landing.html"],
         "modules": {
-            "auth": ["auth_routes.py"]
+            "auth": ["auth_routes.py"],
+            "powershell": ["ps_session.py"]
         },
         "app.py": "Main application file",
         "requirements.txt": "Project dependencies",
