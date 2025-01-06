@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EAP Management Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <span class="navbar-text">Welcome, {{ username }}!</span>
+            <div class="d-flex align-items-center">
+                <div class="form-check me-3">
+                    <input type="checkbox" class="form-check-input" id="panelToggle" checked>
+                    <label class="form-check-label text-light" for="panelToggle">Enable or Disable Panels</label>
+                </div>
+                <form action="{{ url_for('auth.logout') }}" method="post">
+                    <button type="submit" class="btn btn-danger">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-5 pt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="expansion-panel mb-3">
+                    <div class="panel-header">
+                        <span class="panel-arrow">▶</span>
+                        PowerShell Remote Session
+                    </div>
+                    <div class="panel-content">
+                        <!-- PowerShell Remote Session content will go here -->
+                        <p>Remote Session Panel Content</p>
+                    </div>
+                </div>
+
+                <div class="expansion-panel mb-3">
+                    <div class="panel-header">
+                        <span class="panel-arrow">▶</span>
+                        PowerShell Commands
+                    </div>
+                    <div class="panel-content">
+                        <!-- PowerShell Commands content will go here -->
+                        <p>Commands Panel Content</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -68,3 +68,26 @@
   * Panel visibility controls
   * Expansion panels for PowerShell features
   * Proper header and main content structure
+
+[2025-01-06 07:31]
+- Initialized git repository
+- Created .gitignore file with Python-specific exclusions
+- Set up remote repository connection
+- Made initial commit with existing project structure
+
+[2025-01-06 07:49]
+- Fixed blank landing page issue by restoring HTML content
+- Updated main.js to fix checkbox ID mismatch and panel functionality
+- Added missing CSS styles for expansion panels and layout
+- Fixed auth routes to properly handle POST logout and session checks
+- Added proper session validation in landing route
+- Improved header and panel styling for better user experience
+
+[2025-01-06 07:52]
+- Migrated to Bootstrap 5.3.2 for improved styling and responsiveness
+- Updated landing.html to use Bootstrap classes and components
+- Updated login.html to use Bootstrap form styling
+- Simplified custom CSS by removing redundant styles
+- Made expansion panels full-width for better readability
+- Added proper spacing and margins for better layout
+- Improved navbar styling using Bootstrap's navbar component

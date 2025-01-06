@@ -1,14 +1,14 @@
 // Panel visibility and expansion controls
 document.addEventListener('DOMContentLoaded', function() {
     // Get elements
-    const togglePanelsCheckbox = document.getElementById('togglePanels');
+    const panelToggleCheckbox = document.getElementById('panelToggle');
     const panels = document.querySelectorAll('.expansion-panel');
     
     // Initialize panel states
     panels.forEach(panel => {
         const header = panel.querySelector('.panel-header');
         const content = panel.querySelector('.panel-content');
-        const icon = header.querySelector('.expand-icon');
+        const arrow = header.querySelector('.panel-arrow');
         
         // Set initial state
         content.style.display = 'none';
@@ -20,15 +20,17 @@ document.addEventListener('DOMContentLoaded', function() {
             // Toggle content visibility
             content.style.display = isExpanded ? 'none' : 'block';
             
-            // Update icon rotation
-            icon.style.transform = isExpanded ? 'rotate(-90deg)' : 'rotate(0deg)';
+            // Update arrow rotation
+            arrow.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(90deg)';
         });
     });
 
     // Handle show/hide panels checkbox
-    togglePanelsCheckbox.addEventListener('change', function() {
-        panels.forEach(panel => {
-            panel.style.display = this.checked ? 'block' : 'none';
+    if (panelToggleCheckbox) {
+        panelToggleCheckbox.addEventListener('change', function() {
+            panels.forEach(panel => {
+                panel.style.display = this.checked ? 'block' : 'none';
+            });
         });
-    });
+    }
 });

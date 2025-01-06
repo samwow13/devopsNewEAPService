@@ -6,6 +6,8 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/')
 def login():
     """Render the login page"""
+    if 'username' in session:
+        return redirect(url_for('auth.landing'))
     return render_template('login.html')
 
 @auth_bp.route('/login', methods=['POST'])
@@ -27,10 +29,11 @@ def handle_login():
 @auth_bp.route('/landing')
 def landing():
     """Render the landing page with user information"""
-    username = session.get('username', 'Guest')
-    return render_template('landing.html', username=username)
+    if 'username' not in session:
+        return redirect(url_for('auth.login'))
+    return render_template('landing.html', username=session['username'])
 
-@auth_bp.route('/logout')
+@auth_bp.route('/logout', methods=['POST'])
 def logout():
     """Clear user session and redirect to login page"""
     session.clear()  # Remove all session data
