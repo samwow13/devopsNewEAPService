@@ -317,3 +317,10 @@
 - Added execute_command method with automatic session recreation if needed
 - Updated session storage to include credentials for reconnection
 - Improved error handling for PowerShell session management
+
+[2025-01-07 12:42]
+- Completely refactored PSSessionManager to use direct command execution instead of maintaining sessions
+- Removed session management code in favor of passing credentials with each command
+- Added store_credentials method to securely store server credentials
+- Simplified execute_command to use Invoke-Command directly with credentials
+- Updated check_jboss_services to use the new command execution approach

@@ -1,6 +1,6 @@
 """
-Module for managing PowerShell remote sessions.
-This module handles creation, storage, and management of PowerShell remote sessions.
+Module for managing PowerShell remote commands.
+This module handles execution of PowerShell commands on remote servers.
 """
 import subprocess
 from typing import Optional, Dict, Tuple
@@ -8,223 +8,27 @@ from datetime import datetime
 
 class PSSessionManager:
     def __init__(self):
-        self._active_sessions: Dict[str, dict] = {}
+        """Initialize PSSessionManager."""
         self._last_error = None
-    
-    def create_session(self, server_name: str, username: str, password: str) -> Tuple[bool, str, str]:
+        self._credentials = {}
+
+    def store_credentials(self, server_name: str, username: str, password: str) -> None:
         """
-        Creates a new PowerShell session for the specified server.
+        Store credentials for a server.
         
         Args:
-            server_name (str): Name of the server to connect to
+            server_name (str): Name of the server
             username (str): Username for authentication
             password (str): Password for authentication
-            
-        Returns:
-            Tuple[bool, str, str]: (Success status, Raw PowerShell script, Actual command executed)
         """
-        try:
-            # Create PowerShell script for session creation
-            ps_script = f'''
-            $password = ConvertTo-SecureString "{password}" -AsPlainText -Force
-            $cred = New-Object System.Management.Automation.PSCredential ("{username}", $password)
-            $session = New-PSSession -ComputerName {server_name} -Credential $cred
-            if ($session) {{
-                Write-Output "SUCCESS"
-                Write-Output $session.Id
-            }} else {{
-                Write-Output "FAILED"
-            }}
-            '''
-            
-            # Construct the actual command that will be executed
-            command = ["powershell", "-Command", ps_script]
-            actual_command = " ".join(command)
-            
-            # Execute PowerShell script
-            result = subprocess.run(command, capture_output=True, text=True)
-            
-            # Process the output
-            output_lines = result.stdout.strip().split('\n')
-            if len(output_lines) >= 2 and output_lines[0].strip() == "SUCCESS":
-                session_id = output_lines[1].strip()
-                self._active_sessions[server_name] = {
-                    'session_id': session_id,
-                    'created_at': datetime.now(),
-                    'server': server_name,
-                    'username': username,
-                    'password': password
-                }
-                self._last_error = None
-                return True, ps_script, actual_command
-            
-            self._last_error = result.stderr if result.stderr else "Failed to create session"
-            return False, ps_script, actual_command
-            
-        except Exception as e:
-            self._last_error = str(e)
-            return False, ps_script, actual_command
-    
-    def get_session(self, server_name: str) -> Optional[dict]:
-        """
-        Returns the active session for the specified server if it exists.
-        
-        Args:
-            server_name (str): Name of the server
-            
-        Returns:
-            Optional[dict]: Session information if exists, None otherwise
-        """
-        return self._active_sessions.get(server_name)
-    
-    def remove_session(self, server_name: str) -> bool:
-        """
-        Removes and closes the session for the specified server.
-        
-        Args:
-            server_name (str): Name of the server
-            
-        Returns:
-            bool: True if session was successfully removed, False otherwise
-        """
-        if server_name not in self._active_sessions:
-            return False
-            
-        try:
-            session_id = self._active_sessions[server_name]['session_id']
-            ps_script = f"Remove-PSSession -Id {session_id}"
-            
-            subprocess.run(
-                ["powershell", "-Command", ps_script],
-                capture_output=True,
-                text=True
-            )
-            
-            del self._active_sessions[server_name]
-            return True
-            
-        except Exception as e:
-            self._last_error = str(e)
-            return False
-    
-    def get_last_error(self) -> Optional[str]:
-        """Returns the last error message if any."""
-        return self._last_error
-    
-    def has_active_session(self, server_name: str) -> bool:
-        """
-        Checks if there's an active session for the specified server.
-        
-        Args:
-            server_name (str): Name of the server
-            
-        Returns:
-            bool: True if active session exists, False otherwise
-        """
-        return server_name in self._active_sessions
-    
-    def check_services(self, server_name: str) -> Tuple[bool, str]:
-        """
-        Checks the status of JBoss services using an active PowerShell session.
-        
-        Args:
-            server_name (str): Name of the server to check services on
-            
-        Returns:
-            Tuple[bool, str]: (Success status, Output/Error message)
-        """
-        session = self.get_session(server_name)
-        if not session:
-            return False, f"No active session found for server {server_name}"
-            
-        try:
-            # PowerShell script to check services
-            ps_script = """
-            # Define the list of services to check
-            $services = @("Jboss74PROD1", "Jboss74PROD2")
-
-            # Loop through each service
-            foreach ($serviceName in $services) {
-                # Get the service object
-                $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
-
-                if ($null -eq $service) {
-                    Write-Output "Service '$serviceName' not found."
-                    continue
-                }
-
-                # Check the service status
-                if ($service.Status -eq "Running") {
-                    Write-Output "Service '$serviceName' is running."
-                } else {
-                    Write-Output "Service '$serviceName' is not running."
-                }
-            }
-            """
-            
-            # Create command to execute script in remote session
-            session_id = session['session_id']
-            remote_command = f"Invoke-Command -Session (Get-PSSession -Id {session_id}) -ScriptBlock {{ {ps_script} }}"
-            
-            # Execute the command
-            result = subprocess.run(
-                ["powershell", "-Command", remote_command],
-                capture_output=True,
-                text=True
-            )
-            
-            if result.stderr:
-                self._last_error = result.stderr
-                print(f"Error checking services: {result.stderr}")  # Log error to console
-                return False, result.stderr
-                
-            print(f"Service check output: {result.stdout}")  # Log output to console
-            return True, result.stdout.strip()
-            
-        except Exception as e:
-            error_msg = str(e)
-            self._last_error = error_msg
-            print(f"Exception checking services: {error_msg}")  # Log exception to console
-            return False, error_msg
-
-    def validate_session(self, server_name: str) -> bool:
-        """
-        Validates if the current session is still active and usable.
-        
-        Args:
-            server_name (str): Name of the server to validate session for
-            
-        Returns:
-            bool: True if session is valid, False otherwise
-        """
-        if server_name not in self._active_sessions:
-            return False
-            
-        try:
-            session_id = self._active_sessions[server_name]['session_id']
-            ps_script = f'''
-            $session = Get-PSSession -Id {session_id} -ErrorAction SilentlyContinue
-            if ($session -and $session.State -eq "Opened") {{
-                Write-Output "VALID"
-            }} else {{
-                Write-Output "INVALID"
-            }}
-            '''
-            
-            result = subprocess.run(
-                ["powershell", "-Command", ps_script],
-                capture_output=True,
-                text=True
-            )
-            
-            return result.stdout.strip() == "VALID"
-        except Exception as e:
-            self._last_error = str(e)
-            return False
+        self._credentials[server_name] = {
+            'username': username,
+            'password': password
+        }
 
     def execute_command(self, server_name: str, command: str) -> Tuple[bool, str, str]:
         """
-        Executes a PowerShell command on a server, validating and recreating session if needed.
+        Executes a PowerShell command on a server using stored credentials.
         
         Args:
             server_name (str): Name of the server to execute command on
@@ -233,28 +37,17 @@ class PSSessionManager:
         Returns:
             Tuple[bool, str, str]: (Success status, Command output, Error message if any)
         """
-        if not self.validate_session(server_name):
-            # Session is invalid, try to remove it first
-            self.remove_session(server_name)
-            
-            # Get stored credentials and try to recreate session
-            session_info = self._active_sessions.get(server_name, {})
-            if not session_info:
-                return False, "", "No session information available"
-                
-            # Try to recreate the session
-            success, _, _ = self.create_session(
-                server_name,
-                session_info.get('username', ''),
-                session_info.get('password', '')
-            )
-            if not success:
-                return False, "", f"Failed to recreate session: {self._last_error}"
+        if server_name not in self._credentials:
+            return False, "", "No credentials stored for server"
 
+        creds = self._credentials[server_name]
         try:
-            session_id = self._active_sessions[server_name]['session_id']
+            # Create PowerShell script that establishes connection and executes command
             ps_script = f'''
-            $result = Invoke-Command -Session (Get-PSSession -Id {session_id}) -ScriptBlock {{
+            $password = ConvertTo-SecureString "{creds['password']}" -AsPlainText -Force
+            $cred = New-Object System.Management.Automation.PSCredential ("{creds['username']}", $password)
+            
+            $result = Invoke-Command -ComputerName {server_name} -Credential $cred -ScriptBlock {{
                 {command}
             }}
             $result
@@ -274,3 +67,38 @@ class PSSessionManager:
         except Exception as e:
             self._last_error = str(e)
             return False, "", str(e)
+
+    def check_jboss_services(self, server_name: str) -> Tuple[bool, str]:
+        """
+        Check JBoss services on the specified server.
+        
+        Args:
+            server_name (str): Name of the server to check services on
+            
+        Returns:
+            Tuple[bool, str]: (Success status, Error message if any)
+        """
+        try:
+            command = '''
+            Get-Service -Name "*jboss*" | Select-Object Name, Status | Format-Table -AutoSize | Out-String
+            '''
+            
+            success, output, error = self.execute_command(server_name, command)
+            if success:
+                print(f"JBoss Services Status:\n{output}")  # Log services status
+                return True, ""
+            else:
+                error_msg = f"Error checking services: {error}"
+                self._last_error = error_msg
+                print(error_msg)  # Log error to console
+                return False, error_msg
+                
+        except Exception as e:
+            error_msg = str(e)
+            self._last_error = error_msg
+            print(f"Exception checking services: {error_msg}")  # Log exception to console
+            return False, error_msg
+
+    def get_last_error(self) -> Optional[str]:
+        """Returns the last error message if any."""
+        return self._last_error
