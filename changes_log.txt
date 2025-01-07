@@ -310,3 +310,10 @@
 [2025-01-07 12:32]
 - Updated EnvironmentManager.select_environment to automatically check JBoss services after successful connection
 - Added service check logging to environment manager's logging system
+
+[2025-01-07 12:38]
+- Added session validation and auto-reconnection functionality to PSSessionManager
+- Added validate_session method to check if PowerShell sessions are still active
+- Added execute_command method with automatic session recreation if needed
+- Updated session storage to include credentials for reconnection
+- Improved error handling for PowerShell session management

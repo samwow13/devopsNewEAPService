@@ -51,7 +51,9 @@ class PSSessionManager:
                 self._active_sessions[server_name] = {
                     'session_id': session_id,
                     'created_at': datetime.now(),
-                    'server': server_name
+                    'server': server_name,
+                    'username': username,
+                    'password': password
                 }
                 self._last_error = None
                 return True, ps_script, actual_command
@@ -184,3 +186,91 @@ class PSSessionManager:
             self._last_error = error_msg
             print(f"Exception checking services: {error_msg}")  # Log exception to console
             return False, error_msg
+
+    def validate_session(self, server_name: str) -> bool:
+        """
+        Validates if the current session is still active and usable.
+        
+        Args:
+            server_name (str): Name of the server to validate session for
+            
+        Returns:
+            bool: True if session is valid, False otherwise
+        """
+        if server_name not in self._active_sessions:
+            return False
+            
+        try:
+            session_id = self._active_sessions[server_name]['session_id']
+            ps_script = f'''
+            $session = Get-PSSession -Id {session_id} -ErrorAction SilentlyContinue
+            if ($session -and $session.State -eq "Opened") {{
+                Write-Output "VALID"
+            }} else {{
+                Write-Output "INVALID"
+            }}
+            '''
+            
+            result = subprocess.run(
+                ["powershell", "-Command", ps_script],
+                capture_output=True,
+                text=True
+            )
+            
+            return result.stdout.strip() == "VALID"
+        except Exception as e:
+            self._last_error = str(e)
+            return False
+
+    def execute_command(self, server_name: str, command: str) -> Tuple[bool, str, str]:
+        """
+        Executes a PowerShell command on a server, validating and recreating session if needed.
+        
+        Args:
+            server_name (str): Name of the server to execute command on
+            command (str): PowerShell command to execute
+            
+        Returns:
+            Tuple[bool, str, str]: (Success status, Command output, Error message if any)
+        """
+        if not self.validate_session(server_name):
+            # Session is invalid, try to remove it first
+            self.remove_session(server_name)
+            
+            # Get stored credentials and try to recreate session
+            session_info = self._active_sessions.get(server_name, {})
+            if not session_info:
+                return False, "", "No session information available"
+                
+            # Try to recreate the session
+            success, _, _ = self.create_session(
+                server_name,
+                session_info.get('username', ''),
+                session_info.get('password', '')
+            )
+            if not success:
+                return False, "", f"Failed to recreate session: {self._last_error}"
+
+        try:
+            session_id = self._active_sessions[server_name]['session_id']
+            ps_script = f'''
+            $result = Invoke-Command -Session (Get-PSSession -Id {session_id}) -ScriptBlock {{
+                {command}
+            }}
+            $result
+            '''
+            
+            result = subprocess.run(
+                ["powershell", "-Command", ps_script],
+                capture_output=True,
+                text=True
+            )
+            
+            if result.returncode == 0:
+                return True, result.stdout.strip(), ""
+            else:
+                return False, "", result.stderr.strip()
+                
+        except Exception as e:
+            self._last_error = str(e)
+            return False, "", str(e)
