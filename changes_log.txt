@@ -292,3 +292,8 @@
 - Enhanced PowerShell command logging to show both script content and actual command executed
 - Updated PSSessionManager to track and return the exact command passed to subprocess
 - Modified environment_manager to display both forms of the command for better debugging
+
+[2025-01-07 12:16]
+- Reverted to commit 93403439 (added logging to connection)
+- Created new branch 'revert-branch' for the revert
+- Discarded local changes before revert
