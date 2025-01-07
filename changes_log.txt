@@ -219,3 +219,24 @@
 - Added new /environment/status endpoint for periodic status updates
 - Updated frontend to refresh process table every 10 seconds for all environments
 - Improved error handling for remote process checking
+
+[2025-01-07 11:29]
+- Removed PowerShell Remote Session panel and functionality
+- Removed PS Mode indicator from navbar
+- Cleaned up main.js by removing remote session related code
+- Updated project structure to reflect removal of remote session components
+- Simplified PowerShell module structure
+- Removed unused remote session related files (ps_session.py, ps_state.py)
+- Improved code organization by removing unnecessary complexity
+
+[2025-01-07 11:31]
+- Updated ps_routes.py to remove remote session dependency
+- Simplified PowerShell routes to only use local command execution
+- Fixed import error by removing ps_session references
+- Streamlined command execution response format
+
+[2025-01-07 11:32]
+- Updated ps_command.py to remove ps_state dependency
+- Simplified PowerShell command execution to local mode only
+- Streamlined command output format
+- Improved error handling in command execution

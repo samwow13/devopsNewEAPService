@@ -14,7 +14,6 @@
         <div class="container-fluid">
             <span class="navbar-text">Welcome, {{ username }}!</span>
             <div class="d-flex align-items-center">
-                <span class="badge bg-secondary me-3" id="psMode">PS Mode: Local</span>
                 <div class="form-check me-3">
                     <input type="checkbox" class="form-check-input" id="panelToggle" checked>
                     <label class="form-check-label text-light" for="panelToggle">Enable or Disable Panels</label>
@@ -30,41 +29,6 @@
         <div class="row">
             <div class="col-12">
                 <div class="accordion">
-                    <!-- PowerShell Remote Session Panel -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="psRemoteSessionHeader">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
-                                    data-bs-target="#psRemoteSessionContent" aria-expanded="false" 
-                                    aria-controls="psRemoteSessionContent">
-                                PowerShell Remote Session
-                            </button>
-                        </h2>
-                        <div id="psRemoteSessionContent" class="accordion-collapse collapse" 
-                             aria-labelledby="psRemoteSessionHeader">
-                            <div class="accordion-body">
-                                <div class="mb-3">
-                                    <label for="computerName" class="form-label">Computer Name:</label>
-                                    <input type="text" class="form-control" id="computerName" 
-                                           placeholder="Enter computer name or IP">
-                                    <button type="button" class="btn btn-primary mt-2" id="testConnection">
-                                        Test Connection
-                                    </button>
-                                    <div class="mt-3" id="psOutputContainer" style="display: none;">
-                                        <div class="card">
-                                            <div class="card-header bg-dark text-light">
-                                                PowerShell Output
-                                            </div>
-                                            <div class="card-body">
-                                                <pre class="mb-2"><code id="psCommand" class="text-primary"></code></pre>
-                                                <pre><code id="psOutput" class="text-dark"></code></pre>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- PowerShell Commands Panel -->
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="psCommandsHeader">
