@@ -3,7 +3,7 @@ Module for managing PowerShell remote sessions.
 This module handles creation, storage, and management of PowerShell remote sessions.
 """
 import subprocess
-from typing import Optional, Dict
+from typing import Optional, Dict, Tuple
 from datetime import datetime
 
 class PSSessionManager:
@@ -11,7 +11,7 @@ class PSSessionManager:
         self._active_sessions: Dict[str, dict] = {}
         self._last_error = None
     
-    def create_session(self, server_name: str, username: str, password: str) -> bool:
+    def create_session(self, server_name: str, username: str, password: str) -> Tuple[bool, str, str]:
         """
         Creates a new PowerShell session for the specified server.
         
@@ -21,7 +21,7 @@ class PSSessionManager:
             password (str): Password for authentication
             
         Returns:
-            bool: True if connection successful, False otherwise
+            Tuple[bool, str, str]: (Success status, Raw PowerShell script, Actual command executed)
         """
         try:
             # Create PowerShell script for session creation
@@ -37,12 +37,12 @@ class PSSessionManager:
             }}
             '''
             
+            # Construct the actual command that will be executed
+            command = ["powershell", "-Command", ps_script]
+            actual_command = " ".join(command)
+            
             # Execute PowerShell script
-            result = subprocess.run(
-                ["powershell", "-Command", ps_script],
-                capture_output=True,
-                text=True
-            )
+            result = subprocess.run(command, capture_output=True, text=True)
             
             # Process the output
             output_lines = result.stdout.strip().split('\n')
@@ -54,14 +54,14 @@ class PSSessionManager:
                     'server': server_name
                 }
                 self._last_error = None
-                return True
+                return True, ps_script, actual_command
             
             self._last_error = result.stderr if result.stderr else "Failed to create session"
-            return False
+            return False, ps_script, actual_command
             
         except Exception as e:
             self._last_error = str(e)
-            return False
+            return False, ps_script, actual_command
     
     def get_session(self, server_name: str) -> Optional[dict]:
         """

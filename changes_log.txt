@@ -274,3 +274,21 @@
 - Added automatic login redirect for unauthenticated users
 - Improved error handling for authentication and connection failures
 - Removed credential modal implementation as session credentials are used
+
+[2025-01-07 12:02]
+- Added console logging for PowerShell actions in environment_manager.py
+- Added timestamp, server, action details, and error information to logs
+- Implemented logging for environment selection and session creation events
+
+[2025-01-07 12:03]
+- Added password logging for testing purposes (TO BE REMOVED BEFORE PRODUCTION)
+
+[2025-01-07 12:05]
+- Added logging of raw PowerShell commands in environment_manager.py
+- Updated PSSessionManager to return raw PowerShell command for logging
+- Enhanced logging to show actual PowerShell script being executed
+
+[2025-01-07 12:07]
+- Enhanced PowerShell command logging to show both script content and actual command executed
+- Updated PSSessionManager to track and return the exact command passed to subprocess
+- Modified environment_manager to display both forms of the command for better debugging

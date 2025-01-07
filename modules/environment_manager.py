@@ -3,6 +3,7 @@ Module for managing environment connections and selections.
 """
 from .process_manager import ProcessManager
 from .ps_session_manager import PSSessionManager
+from datetime import datetime
 
 class EnvironmentManager:
     def __init__(self):
@@ -15,6 +16,16 @@ class EnvironmentManager:
         self.process_manager = ProcessManager()
         self.session_manager = PSSessionManager()
         self.current_environment = None
+    
+    def _log_ps_action(self, server, action, details=None, error=None):
+        """Internal method to log PowerShell actions to console."""
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_msg = f"[{timestamp}] PowerShell Action on {server}: {action}"
+        if details:
+            log_msg += f"\nDetails: {details}"
+        if error:
+            log_msg += f"\nError: {error}"
+        print(log_msg)
     
     def get_environments(self):
         """Returns a list of available environment names."""
@@ -41,6 +52,8 @@ class EnvironmentManager:
             tuple: (bool, str) - (Success status, Error message if any)
         """
         if environment_name not in self._environments:
+            self._log_ps_action("N/A", "Environment Selection Failed", 
+                              error="Invalid environment selected")
             return False, "Invalid environment selected"
             
         self.current_environment = environment_name
@@ -48,20 +61,34 @@ class EnvironmentManager:
         
         # Local environment doesn't need a session
         if server_name == 'localhost':
+            self._log_ps_action(server_name, "Local Environment Selected")
             return True, None
             
         # Check if we already have an active session
         if self.session_manager.has_active_session(server_name):
+            self._log_ps_action(server_name, "Using Existing Session")
             return True, None
             
         # Create new session if credentials provided
         if username and password:
-            success = self.session_manager.create_session(server_name, username, password)
+            self._log_ps_action(server_name, "Creating New Session", 
+                              details=f"Username: {username}, Password: {password} [TEST MODE - Remove in production]")
+            success, ps_script, actual_command = self.session_manager.create_session(server_name, username, password)
             if not success:
                 error_msg = self.session_manager.get_last_error()
+                self._log_ps_action(server_name, "Session Creation Failed", 
+                                  error=error_msg)
                 return False, f"Failed to create session: {error_msg}"
+            
+            # Log both the PowerShell script and actual command
+            self._log_ps_action(server_name, "PowerShell Script", 
+                              details=f"Script to execute:\n{ps_script}")
+            self._log_ps_action(server_name, "Actual Command", 
+                              details=f"Command executed:\n{actual_command}")
             return True, None
             
+        self._log_ps_action(server_name, "Session Creation Failed", 
+                          error="Credentials required for remote connection")
         return False, "Credentials required for remote connection"
     
     def get_current_environment(self):
