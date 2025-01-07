@@ -240,3 +240,37 @@
 - Simplified PowerShell command execution to local mode only
 - Streamlined command output format
 - Improved error handling in command execution
+
+[2025-01-07 11:42]
+- Created new PSSessionManager module for handling PowerShell remote sessions
+- Added secure session creation and management functionality
+- Implemented session tracking with creation timestamps
+- Added error handling and status reporting for PowerShell sessions
+
+[2025-01-07 11:45]
+- Updated EnvironmentManager to integrate with PSSessionManager
+- Added server configuration for Prod Server 92
+- Implemented session status tracking and management
+- Added credential handling for remote connections
+- Removed unused process status checking
+- Improved error handling and reporting for environment connections
+
+[2025-01-07 11:47]
+- Removed unnecessary win32com and pythoncom imports from ps_session_manager.py
+- Added pywin32 to requirements.txt
+- Simplified PSSessionManager dependencies
+
+[2025-01-07 11:48]
+- Added connection status badge to environment selection UI
+- Updated environment dropdown with correct server options
+- Added environment connection status handling in main.js
+- Updated environment routes to handle connection status
+- Improved error handling for environment connections
+- Added visual feedback for connection states (connected, local, disconnected, error)
+
+[2025-01-07 11:51]
+- Updated environment selection to use session credentials
+- Added authentication checks in environment routes
+- Added automatic login redirect for unauthenticated users
+- Improved error handling for authentication and connection failures
+- Removed credential modal implementation as session credentials are used

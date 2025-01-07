@@ -1,7 +1,7 @@
 """
 Module for handling environment-related routes.
 """
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session, current_app
 from .environment_manager import EnvironmentManager
 
 # Create Blueprint
@@ -13,6 +13,9 @@ env_manager = EnvironmentManager()
 @environment_bp.route('/select', methods=['POST'])
 def select_environment():
     """Handle environment selection."""
+    if 'username' not in session or 'encrypted_password' not in session:
+        return jsonify({'success': False, 'error': 'User not authenticated'}), 401
+        
     data = request.get_json()
     environment = data.get('environment')
     
@@ -20,37 +23,49 @@ def select_environment():
         return jsonify({'error': 'No environment specified'}), 400
         
     try:
-        # Select environment and get process statuses
-        process_statuses = env_manager.select_environment(environment)
+        # Get decrypted credentials from session
+        username = session['username']
+        encrypted_password = session['encrypted_password']
+        credential_manager = current_app.credential_manager
+        password = credential_manager.decrypt_password(encrypted_password)
         
-        response = {
-            'status': 'success',
-            'environment': environment,
-            'process_statuses': process_statuses
-        }
+        # Select environment using session credentials
+        success, error = env_manager.select_environment(environment, username, password)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'environment': environment
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': error
+            }), 400
             
-        return jsonify(response)
-        
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@environment_bp.route('/status', methods=['GET'])
+@environment_bp.route('/status', methods=['POST'])
 def get_status():
-    """Get current environment status including process statuses."""
-    try:
-        current_env = env_manager.get_current_environment()
-        if not current_env:
-            return jsonify({'error': 'No environment selected'}), 400
-            
-        process_statuses = env_manager.get_process_statuses()
+    """Get current environment connection status."""
+    if 'username' not in session:
+        return jsonify({'status': 'disconnected', 'error': 'User not authenticated'}), 401
         
-        response = {
-            'status': 'success',
-            'environment': current_env,
-            'process_statuses': process_statuses
-        }
+    try:
+        data = request.get_json()
+        environment = data.get('environment')
+        
+        if not environment:
+            return jsonify({'status': 'disconnected'})
+        
+        # Get session status for the environment
+        status = env_manager.get_session_status()
+        
+        if not status:
+            return jsonify({'status': 'disconnected'})
             
-        return jsonify(response)
+        return jsonify(status)
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500

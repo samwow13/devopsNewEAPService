@@ -2,48 +2,107 @@
 Module for managing environment connections and selections.
 """
 from .process_manager import ProcessManager
+from .ps_session_manager import PSSessionManager
 
 class EnvironmentManager:
     def __init__(self):
-        # Dictionary to store environment connection commands (not visible to users)
-        self._connection_commands = {
-            'Local': '',  # Local environment doesn't need a connection command
-            'Prod 1': 'Enter-PSSession -ComputerName prod1.example.com',
-            'Prod 2': 'Enter-PSSession -ComputerName prod2.example.com'
+        # Dictionary to store environment connection details (not visible to users)
+        self._environments = {
+            'Local': {'server': 'localhost'},  # Local environment
+            'WPDHSappl84': {'server': 'WPDHSappl84'}  # Production server
         }
-        # Initialize process manager for monitoring processes
+        # Initialize managers
         self.process_manager = ProcessManager()
+        self.session_manager = PSSessionManager()
         self.current_environment = None
     
     def get_environments(self):
         """Returns a list of available environment names."""
-        return list(self._connection_commands.keys())
+        return list(self._environments.keys())
     
-    def get_connection_command(self, environment_name):
+    def get_server_name(self, environment_name):
         """
-        Returns the connection command for the specified environment.
+        Returns the server name for the specified environment.
         This method should only be used internally by the application.
         """
-        return self._connection_commands.get(environment_name)
+        env = self._environments.get(environment_name)
+        return env['server'] if env else None
     
-    def select_environment(self, environment_name):
+    def select_environment(self, environment_name, username=None, password=None):
         """
-        Select an environment and perform necessary initialization.
-        Returns process statuses for the selected environment.
+        Select an environment and establish a PowerShell session if needed.
+        
+        Args:
+            environment_name (str): Name of the environment to select
+            username (str, optional): Username for remote connection
+            password (str, optional): Password for remote connection
+            
+        Returns:
+            tuple: (bool, str) - (Success status, Error message if any)
         """
+        if environment_name not in self._environments:
+            return False, "Invalid environment selected"
+            
         self.current_environment = environment_name
-        # Check processes for any environment
-        return self.process_manager.check_processes(environment_name, self.get_connection_command(environment_name))
+        server_name = self.get_server_name(environment_name)
+        
+        # Local environment doesn't need a session
+        if server_name == 'localhost':
+            return True, None
+            
+        # Check if we already have an active session
+        if self.session_manager.has_active_session(server_name):
+            return True, None
+            
+        # Create new session if credentials provided
+        if username and password:
+            success = self.session_manager.create_session(server_name, username, password)
+            if not success:
+                error_msg = self.session_manager.get_last_error()
+                return False, f"Failed to create session: {error_msg}"
+            return True, None
+            
+        return False, "Credentials required for remote connection"
     
     def get_current_environment(self):
         """Returns the currently selected environment."""
         return self.current_environment
     
-    def get_process_statuses(self):
-        """Returns the current process statuses for the current environment."""
+    def get_session_status(self):
+        """
+        Returns the status of the current environment's session.
+        
+        Returns:
+            dict: Session information if exists, None otherwise
+        """
         if not self.current_environment:
             return None
-        return self.process_manager.check_processes(
-            self.current_environment, 
-            self.get_connection_command(self.current_environment)
-        )
+            
+        server_name = self.get_server_name(self.current_environment)
+        if server_name == 'localhost':
+            return {'status': 'local', 'server': 'localhost'}
+            
+        session = self.session_manager.get_session(server_name)
+        if session:
+            return {
+                'status': 'connected',
+                'server': server_name,
+                'created_at': session['created_at']
+            }
+        return {'status': 'disconnected', 'server': server_name}
+    
+    def close_session(self):
+        """
+        Closes the current environment's session if it exists.
+        
+        Returns:
+            bool: True if session was closed successfully or didn't exist, False otherwise
+        """
+        if not self.current_environment:
+            return True
+            
+        server_name = self.get_server_name(self.current_environment)
+        if server_name == 'localhost':
+            return True
+            
+        return self.session_manager.remove_session(server_name)

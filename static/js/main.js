@@ -14,6 +14,95 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Environment and Connection Management
+document.addEventListener('DOMContentLoaded', function() {
+    const environmentSelect = document.getElementById('environmentSelect');
+    const connectionStatus = document.getElementById('connectionStatus');
+    
+    async function updateConnectionStatus(environment) {
+        try {
+            const response = await fetch('/environment/status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ environment: environment })
+            });
+            
+            if (response.status === 401) {
+                window.location.href = '/'; // Redirect to login if not authenticated
+                return;
+            }
+            
+            const result = await response.json();
+            const statusBadge = connectionStatus.querySelector('.badge');
+            
+            if (result.status === 'connected') {
+                statusBadge.className = 'badge bg-success';
+                statusBadge.textContent = `Connected to ${result.server}`;
+            } else if (result.status === 'local') {
+                statusBadge.className = 'badge bg-info';
+                statusBadge.textContent = 'Local Environment';
+            } else {
+                statusBadge.className = 'badge bg-secondary';
+                statusBadge.textContent = 'Not Connected';
+            }
+        } catch (error) {
+            console.error('Error checking connection status:', error);
+            const statusBadge = connectionStatus.querySelector('.badge');
+            statusBadge.className = 'badge bg-danger';
+            statusBadge.textContent = 'Connection Error';
+        }
+    }
+    
+    if (environmentSelect) {
+        environmentSelect.addEventListener('change', async function() {
+            const selectedEnv = this.value;
+            if (!selectedEnv) {
+                const statusBadge = connectionStatus.querySelector('.badge');
+                statusBadge.className = 'badge bg-secondary';
+                statusBadge.textContent = 'Not Connected';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/environment/select', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ environment: selectedEnv })
+                });
+                
+                if (response.status === 401) {
+                    window.location.href = '/'; // Redirect to login if not authenticated
+                    return;
+                }
+                
+                const result = await response.json();
+                if (result.success) {
+                    await updateConnectionStatus(selectedEnv);
+                } else {
+                    const statusBadge = connectionStatus.querySelector('.badge');
+                    statusBadge.className = 'badge bg-danger';
+                    statusBadge.textContent = result.error || 'Connection Failed';
+                }
+            } catch (error) {
+                console.error('Error selecting environment:', error);
+                const statusBadge = connectionStatus.querySelector('.badge');
+                statusBadge.className = 'badge bg-danger';
+                statusBadge.textContent = 'Connection Error';
+            }
+        });
+        
+        // Check initial connection status
+        const initialEnv = environmentSelect.value;
+        if (initialEnv) {
+            updateConnectionStatus(initialEnv);
+        }
+    }
+});
+
 // PowerShell Command Execution
 document.addEventListener('DOMContentLoaded', function() {
     const executeCommandBtn = document.getElementById('executeCommand');
