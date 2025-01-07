@@ -85,6 +85,14 @@ class EnvironmentManager:
                               details=f"Script to execute:\n{ps_script}")
             self._log_ps_action(server_name, "Actual Command", 
                               details=f"Command executed:\n{actual_command}")
+            
+            # Check JBoss services after successful connection
+            success, output = self.session_manager.check_services(server_name)
+            if success:
+                self._log_ps_action(server_name, "Service Check", details=output)
+            else:
+                self._log_ps_action(server_name, "Service Check Failed", error=output)
+                
             return True, None
             
         self._log_ps_action(server_name, "Session Creation Failed", 

@@ -297,3 +297,16 @@
 - Reverted to commit 93403439 (added logging to connection)
 - Created new branch 'revert-branch' for the revert
 - Discarded local changes before revert
+
+[2025-01-07 12:24]
+- Removed unused Actions column from Process Status table in landing.html
+- Simplified table structure by removing unnecessary UI elements
+
+[2025-01-07 12:29]
+- Added check_services method to PSSessionManager for checking JBoss service status
+- Implemented remote service checking using active PowerShell sessions
+- Added console logging for service check results and errors
+
+[2025-01-07 12:32]
+- Updated EnvironmentManager.select_environment to automatically check JBoss services after successful connection
+- Added service check logging to environment manager's logging system

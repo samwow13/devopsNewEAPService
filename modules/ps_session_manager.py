@@ -120,3 +120,67 @@ class PSSessionManager:
             bool: True if active session exists, False otherwise
         """
         return server_name in self._active_sessions
+    
+    def check_services(self, server_name: str) -> Tuple[bool, str]:
+        """
+        Checks the status of JBoss services using an active PowerShell session.
+        
+        Args:
+            server_name (str): Name of the server to check services on
+            
+        Returns:
+            Tuple[bool, str]: (Success status, Output/Error message)
+        """
+        session = self.get_session(server_name)
+        if not session:
+            return False, f"No active session found for server {server_name}"
+            
+        try:
+            # PowerShell script to check services
+            ps_script = """
+            # Define the list of services to check
+            $services = @("Jboss74PROD1", "Jboss74PROD2")
+
+            # Loop through each service
+            foreach ($serviceName in $services) {
+                # Get the service object
+                $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+
+                if ($null -eq $service) {
+                    Write-Output "Service '$serviceName' not found."
+                    continue
+                }
+
+                # Check the service status
+                if ($service.Status -eq "Running") {
+                    Write-Output "Service '$serviceName' is running."
+                } else {
+                    Write-Output "Service '$serviceName' is not running."
+                }
+            }
+            """
+            
+            # Create command to execute script in remote session
+            session_id = session['session_id']
+            remote_command = f"Invoke-Command -Session (Get-PSSession -Id {session_id}) -ScriptBlock {{ {ps_script} }}"
+            
+            # Execute the command
+            result = subprocess.run(
+                ["powershell", "-Command", remote_command],
+                capture_output=True,
+                text=True
+            )
+            
+            if result.stderr:
+                self._last_error = result.stderr
+                print(f"Error checking services: {result.stderr}")  # Log error to console
+                return False, result.stderr
+                
+            print(f"Service check output: {result.stdout}")  # Log output to console
+            return True, result.stdout.strip()
+            
+        except Exception as e:
+            error_msg = str(e)
+            self._last_error = error_msg
+            print(f"Exception checking services: {error_msg}")  # Log exception to console
+            return False, error_msg
