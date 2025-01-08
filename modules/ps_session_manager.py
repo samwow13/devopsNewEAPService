@@ -99,6 +99,47 @@ class PSSessionManager:
             print(f"Exception checking services: {error_msg}")  # Log exception to console
             return False, error_msg
 
+    def has_credentials(self, server_name: str) -> bool:
+        """
+        Check if credentials are stored for the specified server.
+        
+        Args:
+            server_name (str): Name of the server
+            
+        Returns:
+            bool: True if credentials exist, False otherwise
+        """
+        return server_name in self._credentials
+
     def get_last_error(self) -> Optional[str]:
         """Returns the last error message if any."""
         return self._last_error
+
+    def get_credentials(self, server_name: str) -> Optional[dict]:
+        """
+        Get stored credentials for a server.
+        
+        Args:
+            server_name (str): Name of the server
+            
+        Returns:
+            Optional[dict]: Dictionary with username if credentials exist, None otherwise
+        """
+        if server_name in self._credentials:
+            return {'username': self._credentials[server_name]['username']}
+        return None
+
+    def remove_credentials(self, server_name: str) -> bool:
+        """
+        Remove stored credentials for a server.
+        
+        Args:
+            server_name (str): Name of the server
+            
+        Returns:
+            bool: True if credentials were removed, False if they didn't exist
+        """
+        if server_name in self._credentials:
+            del self._credentials[server_name]
+            return True
+        return False

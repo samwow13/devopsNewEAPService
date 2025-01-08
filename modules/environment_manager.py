@@ -41,7 +41,7 @@ class EnvironmentManager:
     
     def select_environment(self, environment_name, username=None, password=None):
         """
-        Select an environment and establish a PowerShell session if needed.
+        Select an environment and establish a connection if needed.
         
         Args:
             environment_name (str): Name of the environment to select
@@ -64,30 +64,19 @@ class EnvironmentManager:
             self._log_ps_action(server_name, "Local Environment Selected")
             return True, None
             
-        # Check if we already have an active session
-        if self.session_manager.has_active_session(server_name):
-            self._log_ps_action(server_name, "Using Existing Session")
+        # Check if we already have stored credentials
+        if self.session_manager.has_credentials(server_name):
+            self._log_ps_action(server_name, "Using Existing Credentials")
             return True, None
             
-        # Create new session if credentials provided
+        # Store new credentials if provided
         if username and password:
-            self._log_ps_action(server_name, "Creating New Session", 
-                              details=f"Username: {username}, Password: {password} [TEST MODE - Remove in production]")
-            success, ps_script, actual_command = self.session_manager.create_session(server_name, username, password)
-            if not success:
-                error_msg = self.session_manager.get_last_error()
-                self._log_ps_action(server_name, "Session Creation Failed", 
-                                  error=error_msg)
-                return False, f"Failed to create session: {error_msg}"
+            self._log_ps_action(server_name, "Storing New Credentials", 
+                              details=f"Username: {username}")
+            self.session_manager.store_credentials(server_name, username, password)
             
-            # Log both the PowerShell script and actual command
-            self._log_ps_action(server_name, "PowerShell Script", 
-                              details=f"Script to execute:\n{ps_script}")
-            self._log_ps_action(server_name, "Actual Command", 
-                              details=f"Command executed:\n{actual_command}")
-            
-            # Check JBoss services after successful connection
-            success, output = self.session_manager.check_services(server_name)
+            # Test connection by checking JBoss services
+            success, output = self.session_manager.check_jboss_services(server_name)
             if success:
                 self._log_ps_action(server_name, "Service Check", details=output)
             else:
@@ -95,7 +84,7 @@ class EnvironmentManager:
                 
             return True, None
             
-        self._log_ps_action(server_name, "Session Creation Failed", 
+        self._log_ps_action(server_name, "Connection Failed", 
                           error="Credentials required for remote connection")
         return False, "Credentials required for remote connection"
     
@@ -103,12 +92,12 @@ class EnvironmentManager:
         """Returns the currently selected environment."""
         return self.current_environment
     
-    def get_session_status(self):
+    def get_connection_status(self):
         """
-        Returns the status of the current environment's session.
+        Returns the status of the current environment's connection.
         
         Returns:
-            dict: Session information if exists, None otherwise
+            dict: Connection information if exists, None otherwise
         """
         if not self.current_environment:
             return None
@@ -117,21 +106,21 @@ class EnvironmentManager:
         if server_name == 'localhost':
             return {'status': 'local', 'server': 'localhost'}
             
-        session = self.session_manager.get_session(server_name)
-        if session:
+        credentials = self.session_manager.get_credentials(server_name)
+        if credentials:
             return {
                 'status': 'connected',
                 'server': server_name,
-                'created_at': session['created_at']
+                'username': credentials['username']
             }
         return {'status': 'disconnected', 'server': server_name}
     
-    def close_session(self):
+    def remove_credentials(self):
         """
-        Closes the current environment's session if it exists.
+        Removes the current environment's credentials if it exists.
         
         Returns:
-            bool: True if session was closed successfully or didn't exist, False otherwise
+            bool: True if credentials were removed successfully or didn't exist, False otherwise
         """
         if not self.current_environment:
             return True
@@ -140,4 +129,4 @@ class EnvironmentManager:
         if server_name == 'localhost':
             return True
             
-        return self.session_manager.remove_session(server_name)
+        return self.session_manager.remove_credentials(server_name)

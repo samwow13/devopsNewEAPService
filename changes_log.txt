@@ -324,3 +324,10 @@
 - Added store_credentials method to securely store server credentials
 - Simplified execute_command to use Invoke-Command directly with credentials
 - Updated check_jboss_services to use the new command execution approach
+
+[2025-01-07 12:46]
+- Updated EnvironmentManager to use credential-based approach instead of sessions
+- Added has_credentials, get_credentials, and remove_credentials methods to PSSessionManager
+- Renamed session-related methods to reflect credential-based approach
+- Updated logging messages to reflect new credential-based connection approach
+- Fixed compatibility issues between EnvironmentManager and PSSessionManager
