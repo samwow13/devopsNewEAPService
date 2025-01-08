@@ -331,3 +331,9 @@
 - Renamed session-related methods to reflect credential-based approach
 - Updated logging messages to reflect new credential-based connection approach
 - Fixed compatibility issues between EnvironmentManager and PSSessionManager
+
+[2025-01-08 07:01]
+- Added connection testing when selecting an environment
+- Added PowerShell version check to verify connection before checking services
+- Updated environment status endpoint to verify active connections
+- Fixed issue where no connection was attempted when selecting WPDHSappl84

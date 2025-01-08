@@ -75,6 +75,16 @@ class EnvironmentManager:
                               details=f"Username: {username}")
             self.session_manager.store_credentials(server_name, username, password)
             
+            # Test connection by running a simple PowerShell command
+            success, output, error = self.session_manager.execute_command(
+                server_name,
+                "$Host.Version | Select-Object -Property Major,Minor | ConvertTo-Json"
+            )
+            
+            if not success:
+                self._log_ps_action(server_name, "Connection Failed", error=error)
+                return False, f"Failed to connect: {error}"
+            
             # Test connection by checking JBoss services
             success, output = self.session_manager.check_jboss_services(server_name)
             if success:

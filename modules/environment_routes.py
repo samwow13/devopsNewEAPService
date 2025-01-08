@@ -59,12 +59,23 @@ def get_status():
         if not environment:
             return jsonify({'status': 'disconnected'})
         
-        # Get session status for the environment
-        status = env_manager.get_session_status()
+        # Get connection status for the environment
+        status = env_manager.get_connection_status()
         
         if not status:
             return jsonify({'status': 'disconnected'})
             
+        # If connected to a remote server, verify connection is still working
+        if status.get('status') == 'connected':
+            server_name = status.get('server')
+            success, _, error = env_manager.session_manager.execute_command(
+                server_name,
+                "$Host.Version | Select-Object -Property Major,Minor | ConvertTo-Json"
+            )
+            if not success:
+                status['status'] = 'disconnected'
+                status['error'] = error
+        
         return jsonify(status)
         
     except Exception as e:
